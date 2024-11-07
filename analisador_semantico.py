@@ -1,5 +1,4 @@
-from analisador_sintatico import Parser
-
+from code_generator import Parser
 class SymbolTable:
     def __init__(self):
         self.symbols = {}
@@ -29,7 +28,7 @@ class SemanticAnalyzer(Parser):
         self.verificar('ATTR')
         tipo_valor = self.expressao()
         if tipo != tipo_valor:
-            raise ValueError(f"Erro semântico: Tipo incompatível para '{nome}' - esperado '{tipo}', encontrado '{tipo_valor}'")
+            raise ValueError(f"Erro semântico na linha {self.linha_atual}: Tipo incompatível para '{nome}' - esperado '{tipo}', encontrado '{tipo_valor}'")
         self.verificar('PCOMMA')
 
     def atribuicao(self):
@@ -39,7 +38,7 @@ class SemanticAnalyzer(Parser):
         self.verificar('ATTR')
         tipo_valor = self.expressao()
         if tipo_variavel != tipo_valor:
-            raise ValueError(f"Erro semântico: Atribuição de tipo incompatível para '{nome}' - esperado '{tipo_variavel}', encontrado '{tipo_valor}'")
+            raise ValueError(f"Erro semântico na linha {self.linha_atual}: Atribuição de tipo incompatível para '{nome}' - esperado '{tipo_variavel}', encontrado '{tipo_valor}'")
         self.verificar('PCOMMA')
 
     def expressao(self):
@@ -47,7 +46,7 @@ class SemanticAnalyzer(Parser):
         while self.atual() in ('OR', 'AND'):
             self.consumir()
             if tipo != self.relacional():
-                raise ValueError("Erro semântico: Tipos incompatíveis em operação lógica.")
+                raise ValueError(f"Erro semântico na linha {self.linha_atual}: Tipos incompatíveis em operação lógica.")
         return tipo
 
     def relacional(self):
@@ -56,7 +55,6 @@ class SemanticAnalyzer(Parser):
             self.consumir()
             tipo_direito = self.termo()
 
-            # Verificação de compatibilidade de tipos entre int e float
             tipos_compatíveis = (
                 (tipo == tipo_direito) or
                 (tipo in ('INT', 'INTEGER_CONST') and tipo_direito in ('FLOAT', 'FLOAT_CONST')) or
@@ -64,7 +62,7 @@ class SemanticAnalyzer(Parser):
             )
             
             if not tipos_compatíveis:
-                raise ValueError("Erro semântico: Tipos incompatíveis em operação relacional.")
+                raise ValueError(f"Erro semântico na linha {self.linha_atual}: Tipos incompatíveis em operação relacional.")
 
             if tipo in ('INT', 'INTEGER_CONST') and tipo_direito in ('FLOAT', 'FLOAT_CONST'):
                 tipo = 'FLOAT'
@@ -75,16 +73,15 @@ class SemanticAnalyzer(Parser):
 
     def termo(self):
         tipo = self.fator()
-        while self.atual() in ('MULT', 'DIV', 'PLUS', 'MINUS'):  # Adição dos operadores PLUS e MINUS
+        while self.atual() in ('MULT', 'DIV', 'PLUS', 'MINUS'):
             self.consumir()
             tipo_direito = self.fator()
 
-            # Verificação de compatibilidade para operações aritméticas
             if tipo != tipo_direito and not (
                 (tipo in ('INT', 'INTEGER_CONST') and tipo_direito in ('FLOAT', 'FLOAT_CONST')) or
                 (tipo in ('FLOAT', 'FLOAT_CONST') and tipo_direito in ('INT', 'INTEGER_CONST'))
             ):
-                raise ValueError("Erro semântico: Tipos incompatíveis em operação aritmética.")
+                raise ValueError(f"Erro semântico na linha {self.linha_atual}: Tipos incompatíveis em operação aritmética.")
 
             if tipo in ('INT', 'INTEGER_CONST') and tipo_direito in ('FLOAT', 'FLOAT_CONST'):
                 tipo = 'FLOAT'
@@ -113,4 +110,4 @@ class SemanticAnalyzer(Parser):
             self.verificar('RBRACKET')
             return tipo
         else:
-            self.erro('Fator')
+            raise ValueError(f"Erro semântico na linha {self.linha_atual}: Fator inesperado.")
