@@ -51,6 +51,7 @@ class SemanticAnalyzer(Parser):
 
     def relacional(self):
         tipo = self.termo()
+        print(tipo)
         while self.atual() in ('LT', 'GT', 'LE', 'GE', 'EQ', 'NE'):
             self.consumir()
             tipo_direito = self.termo()

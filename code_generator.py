@@ -45,12 +45,9 @@ class CodeGenerator:
         
         if self.atual() == 'ATTR':
             self.verificar('ATTR')
-            valor = self.expressao()
+            valor = self.termo()
+            
             self.adicionar_codigo(f"{var_nome} = {valor}")
-        
-        elif self.atual() == 'CONT':
-            self.verificar('CONT')
-            self.adicionar_codigo(f"{var_nome} += 1")
 
     def if_statement(self):
         print("Iniciando estrutura if.")
@@ -75,9 +72,9 @@ class CodeGenerator:
     def for_statement(self):
         print("Iniciando estrutura for.")
         self.verificar('FOR')
-        var_loop = self.lexemas[self.pos]
-        self.verificar('ID')
+        var_loop = self.lexemas[self.pos + 1]
         self.verificar('IN')
+        self.verificar('ID')
         iteravel = self.expressao()
         self.adicionar_codigo(f"for {var_loop} in {iteravel}:")
         self.nivel_indentacao += 1
@@ -109,6 +106,14 @@ class CodeGenerator:
             self.print_statement()
         elif self.atual() == 'LBRACKET':
             self.lista()
+        elif self.atual() == 'PLUS':
+            self.expressao()
+        elif self.atual() == 'MINUS':
+            self.expressao()
+        elif self.atual() == 'MULT':
+            self.expressao()
+        elif self.atual() == 'DIV':
+            self.expressao()
         else:
             self.erro('Declaração')
 
@@ -129,26 +134,39 @@ class CodeGenerator:
         self.adicionar_codigo(f"print({', '.join(conteudo)})")
 
     def termo(self):
-        print("Iniciando termo.")
         resultado = self.fator()
-        while self.atual() in ('MULT', 'DIV'):
+        while self.atual() in ('MULT', 'DIV', 'PLUS', 'MINUS'):
             operador = self.lexemas[self.pos]
-            print(f"Operador no termo: {operador}")
             self.consumir()
-            resultado += f" {operador} {self.fator()}"
+            if operador == 'mais':
+                resultado += f" + {self.fator()}"
+            elif operador == 'menos':
+                resultado += f" - {self.fator()}"
+            elif operador == 'multiplica':
+                resultado += f" * {self.fator()}"
+            elif operador == 'divide':
+                resultado += f" / {self.fator()}"
         return resultado
 
     def expressao(self):
-        print("Iniciando expressão.")
         resultado = self.termo()
-        while self.atual() in ('PLUS', 'MINUS', 'LT', 'GT', 'EQ', 'NE'):
+        while self.atual() in ('LT', 'GT', 'EQ', 'NE'):
             operador = self.lexemas[self.pos]
-            print(f"Operador na expressão: {operador}")
             self.consumir()
-            resultado += f" {operador} {self.termo()}"
+            if operador == 'maior':
+                resultado += f" > {self.termo()}"
+            elif operador == 'menor':
+                resultado += f" < {self.termo()}"
+            elif operador == 'igual':
+                resultado += f" == {self.termo()}"
+            elif operador == 'diferente':
+                resultado += f" != {self.termo()}"
         return resultado
 
+
+
     def fator(self):
+        print(self.atual())
         if self.atual() == 'INTEGER_CONST':
             valor = self.lexemas[self.pos]
             self.consumir()
@@ -167,6 +185,8 @@ class CodeGenerator:
             return f'"{valor}"'
         elif self.atual() == 'LBRACKET':
             return self.lista()
+        elif self.atual() == 'PRINT':
+            return self.print_statement()
         elif self.atual() == 'LPAREN':
             self.consumir()
             resultado = self.expressao()
@@ -181,7 +201,6 @@ class CodeGenerator:
 
         if self.atual() != 'RBRACKET':
             elementos.append(self.expressao())
-
             while self.atual() == 'COMMA':
                 self.consumir()
                 if self.atual() != 'RBRACKET':
@@ -190,5 +209,4 @@ class CodeGenerator:
                     break
 
         self.verificar('RBRACKET')
-        return f"[{', '.join(map(str, elementos))}]" 
-
+        return f"[{', '.join(map(str, elementos))}]"

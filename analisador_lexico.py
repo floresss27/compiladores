@@ -31,7 +31,7 @@ class AnalisadorLexico:
                 inicio = i
                 while i < len(codigo) and codigo[i].isdigit():
                     i += 1
-                # Verifica se é um número decimal
+                    
                 if i < len(codigo) and codigo[i] == '.':
                     i += 1
                     while i < len(codigo) and codigo[i].isdigit():
@@ -83,15 +83,14 @@ class AnalisadorLexico:
     def verificar_palavra_reservada(self, lexema):
         palavras_reservadas = {
             'main': 'MAIN', 'class': 'CLASS', 'def': 'DEF', 'int': 'INT',
-            'float': 'FLOAT', 'string': 'STRING', 'if': 'IF', 'else': 'ELSE',
-            'while': 'WHILE', 'for': 'FOR', 'read': 'READ', 'print': 'PRINT', 'in': 'IN'
+            'float': 'FLOAT', 'string': 'STRING', 'se': 'IF', 'senao': 'ELSE','enquanto': 'WHILE', 'repete': 'FOR', 'read': 'READ', 'print': 'PRINT', 'em': 'IN', 'mais': 'PLUS', 'menos': 'MINUS', 'multiplica': 'MULT', 'divide': 'DIV', 'menor': 'LT', 'maior': 'GT', 'igual': 'ATTR'
         }
         return palavras_reservadas.get(lexema, 'ID')
 
     def verificar_operador(self, char):
         operadores = {
-            '+': 'PLUS', '-': 'MINUS', '*': 'MULT', '/': 'DIV',
-            '<': 'LT', '>': 'GT', '=': 'ATTR',
+            'mais': 'PLUS', 'menos': 'MINUS', 'multiplica': 'MULT', 'divide': 'DIV',
+            'menor': 'LT', 'maior': 'GT', 'igual': 'ATTR',
         }
         return operadores.get(char, 'UNKNOWN')
 

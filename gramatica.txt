@@ -1,0 +1,20 @@
+atribuicao> ::= <identificador> "igual" <expressao>
+
+<condicional> ::= "se" <expressao> <bloco>
+                | "se" <expressao> <bloco> "se_nao" <bloco>
+
+<loop_for> ::= "para" "em" <identificador> <expressao> <bloco>
+
+<print> ::= "foto" "(" <expressao>  ")" | "(" ("," <expressao>)* ")"
+
+<expressao> ::= <termo> ("maior" | "menor" | <termo>)
+
+<lista> ::= "[" <expressao> ("," <expressao>)* "]"
+
+<bloco> ::= <declaracao>*
+
+<identificador> ::= [a-zA-Z_][a-zA-Z0-9_]*
+
+<numero> ::= [0-9]+
+
+<string> ::= '"' .*? '"'
