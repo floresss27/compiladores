@@ -83,7 +83,7 @@ class AnalisadorLexico:
     def verificar_palavra_reservada(self, lexema):
         palavras_reservadas = {
             'main': 'MAIN', 'class': 'CLASS', 'def': 'DEF', 'int': 'INT',
-            'float': 'FLOAT', 'string': 'STRING', 'se': 'IF', 'senao': 'ELSE','enquanto': 'WHILE', 'repete': 'FOR', 'read': 'READ', 'print': 'PRINT', 'em': 'IN', 'mais': 'PLUS', 'menos': 'MINUS', 'multiplica': 'MULT', 'divide': 'DIV', 'menor': 'LT', 'maior': 'GT', 'igual': 'ATTR'
+            'float': 'FLOAT', 'string': 'STRING', 'se': 'IF', 'senao': 'ELSE','enquanto': 'WHILE', 'repete': 'FOR', 'read': 'READ', 'foto': 'PRINT', 'em': 'IN', 'mais': 'PLUS', 'menos': 'MINUS', 'multiplica': 'MULT', 'divide': 'DIV', 'menor': 'LT', 'maior': 'GT', 'igual': 'ATTR', 'input': 'INPUT', 'int': 'INT'
         }
         return palavras_reservadas.get(lexema, 'ID')
 

@@ -114,6 +114,8 @@ class CodeGenerator:
             self.expressao()
         elif self.atual() == 'DIV':
             self.expressao()
+        elif self.atual() == 'INPUT':
+            self.input_statement() 
         else:
             self.erro('Declaração')
 
@@ -192,6 +194,25 @@ class CodeGenerator:
             resultado = self.expressao()
             self.verificar('RPAREN')
             return f"({resultado})"
+        elif self.atual() == 'INPUT':
+            self.consumir()  # Consome o token `INPUT`
+            return self.input_statement() 
+        elif self.atual() == 'INT':  # Adicionamos verificação de INT
+            self.consumir()  # Consome 'int'
+            self.verificar('LPAREN')  # Verifica que há um parêntese abrindo
+            if self.atual() == 'INPUT':
+                self.consumir()  # Consome 'input'
+                prompt = ""
+                if self.atual() == 'LPAREN':
+                    self.verificar('LPAREN')
+                    
+                    if self.atual() == 'STRING':
+                        prompt = self.lexemas[self.pos]
+                        self.consumir()
+                    
+                    self.verificar('RPAREN')
+                self.verificar('RPAREN')  # Verifica que há um parêntese fechando para 'int'
+                return f"int(input({prompt}))"
         else:
             self.erro('Fator')
 
@@ -210,3 +231,21 @@ class CodeGenerator:
 
         self.verificar('RBRACKET')
         return f"[{', '.join(map(str, elementos))}]"
+
+    def input_statement(self):
+        print("Iniciando declaração input.")
+        prompt = ""
+        
+        # Verifica se há parênteses e uma string de prompt opcional
+        if self.atual() == 'LPAREN':
+            self.verificar('LPAREN')
+            
+            # Se o próximo token for uma string, define o prompt
+            if self.atual() == 'STRING':
+                prompt = self.lexemas[self.pos]
+                self.consumir()
+            
+            self.verificar('RPAREN')
+        
+        # Retorna a expressão `input()` com ou sem o prompt
+        return f"input({prompt})" if prompt else "input()"

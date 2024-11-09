@@ -1,4 +1,6 @@
-lista igual [ 1, 2, 3, 4]
+numero igual int ( input ( "Digite um número: " ) )
 
-repete em i lista:
-    print ( i )
+se numero maior 10
+    foto ( "O número é maior que 10" )
+senao
+    foto ( "O número é 10 ou menor" )
