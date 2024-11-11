@@ -57,12 +57,10 @@ class CodeGenerator:
         self.adicionar_codigo(f"if {condicao}:")
         self.nivel_indentacao += 1
 
-        # Processa as declarações dentro do if principal
         while self.atual() and self.atual() not in ('ELSE', 'senao', 'IF'):
             self.declaracao()
         self.nivel_indentacao -= 1
 
-        # Se encontrar um se subsequente logo após, trate como elif
         if self.atual() == 'IF':
             self.consumir()
             condicao = self.expressao()
@@ -72,14 +70,13 @@ class CodeGenerator:
                 self.declaracao()
             self.nivel_indentacao -= 1
 
-        # Tratamento para o senao como else
         if self.atual() == 'ELSE':
             self.consumir()
             self.adicionar_codigo("else:")
             self.nivel_indentacao += 1
             while self.atual() and self.atual() not in ('FOR', 'WHILE', 'ID', 'IF', 'ELSE', 'senao'):
                 self.declaracao()
-            self.nivel_indentacao -= 1  # Ajusta para evitar indentação incorreta
+            self.nivel_indentacao -= 1
             
     def for_statement(self):
         print("Iniciando estrutura for.")
@@ -101,7 +98,7 @@ class CodeGenerator:
         self.verificar('WHILE')
         condicao = self.expressao()
         self.adicionar_codigo(f"while {condicao}:")
-        self.nivel_indentacao += 1  # Aumenta a indentação para o bloco interno
+        self.nivel_indentacao += 1
         while self.atual() in ('PRINT', 'ID', 'IF', 'WHILE'):
             self.declaracao()
         self.nivel_indentacao -= 1
@@ -129,7 +126,9 @@ class CodeGenerator:
         elif self.atual() == 'DIV':
             self.expressao()
         elif self.atual() == 'INPUT':
-            self.input_statement() 
+            self.input_statement()
+        elif self.atual() == 'COMMENT':
+            self.tratar_comentario()
         else:
             self.erro('Declaração')
 
@@ -212,13 +211,13 @@ class CodeGenerator:
             self.verificar('RPAREN')
             return f"({resultado})"
         elif self.atual() == 'INPUT':
-            self.consumir()  # Consome o token INPUT
+            self.consumir()
             return self.input_statement()
-        elif self.atual() == 'INT':  # Adicionamos verificação de INT
-            self.consumir()  # Consome 'int'
-            self.verificar('LPAREN')  # Verifica que há um parêntese abrindo
+        elif self.atual() == 'INT':
+            self.consumir()
+            self.verificar('LPAREN')
             if self.atual() == 'INPUT':
-                self.consumir()  # Consome 'input'
+                self.consumir()
                 prompt = ""
                 if self.atual() == 'LPAREN':
                     self.verificar('LPAREN')
@@ -228,7 +227,7 @@ class CodeGenerator:
                         self.consumir()
 
                     self.verificar('RPAREN')
-                self.verificar('RPAREN')  # Verifica que há um parêntese fechando para 'int'
+                self.verificar('RPAREN')
                 return f"int(input({prompt}))"
         else:
             self.erro('Fator')
@@ -252,17 +251,20 @@ class CodeGenerator:
     def input_statement(self):
         print("Iniciando declaração input.")
         prompt = ""
-        
-        # Verifica se há parênteses e uma string de prompt opcional
+
         if self.atual() == 'LPAREN':
             self.verificar('LPAREN')
-            
-            # Se o próximo token for uma string, define o prompt
+
             if self.atual() == 'STRING':
                 prompt = self.lexemas[self.pos]
                 self.consumir()
             
             self.verificar('RPAREN')
-        
-        # Retorna a expressão input() com ou sem o prompt
+
         return f"input({prompt})" if prompt else "input()"
+    
+    def tratar_comentario(self):
+        """Adiciona o comentário ao código gerado."""
+        comentario = self.lexemas[self.pos]
+        self.adicionar_codigo(comentario)
+        self.consumir()

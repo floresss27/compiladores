@@ -1,2 +1,2 @@
-lista igual [ 1, 2, 3, 4, 5 ] 
+lista igual [ 1, 2, 3, 4, 5 ] #aaaaaa
 foto ( lista )
