@@ -57,25 +57,39 @@ class CodeGenerator:
         self.adicionar_codigo(f"if {condicao}:")
         self.nivel_indentacao += 1
 
-        while self.atual() and self.atual() != 'ELSE':
+        # Processa as declarações dentro do if principal
+        while self.atual() and self.atual() not in ('ELSE', 'senao', 'IF'):
             self.declaracao()
         self.nivel_indentacao -= 1
 
+        # Se encontrar um se subsequente logo após, trate como elif
+        if self.atual() == 'IF':
+            self.consumir()
+            condicao = self.expressao()
+            self.adicionar_codigo(f"elif {condicao}:")
+            self.nivel_indentacao += 1
+            while self.atual() and self.atual() not in ('ELSE', 'senao', 'IF'):
+                self.declaracao()
+            self.nivel_indentacao -= 1
+
+        # Tratamento para o senao como else
         if self.atual() == 'ELSE':
             self.consumir()
             self.adicionar_codigo("else:")
             self.nivel_indentacao += 1
-            while self.atual():
+            while self.atual() and self.atual() not in ('FOR', 'WHILE', 'ID', 'IF', 'ELSE', 'senao'):
                 self.declaracao()
-            self.nivel_indentacao -= 1
-
+            self.nivel_indentacao -= 1  # Ajusta para evitar indentação incorreta
+            
     def for_statement(self):
         print("Iniciando estrutura for.")
         self.verificar('FOR')
         var_loop = self.lexemas[self.pos + 1]
         self.verificar('IN')
-        self.verificar('ID')
-        iteravel = self.expressao()
+        iteravel = self.lexemas[self.pos + 1]
+        print(var_loop)
+        self.consumir()
+        self.consumir() 
         self.adicionar_codigo(f"for {var_loop} in {iteravel}:")
         self.nivel_indentacao += 1
         while self.atual() in ('PRINT', 'ID', 'IF', 'WHILE'):
@@ -87,8 +101,8 @@ class CodeGenerator:
         self.verificar('WHILE')
         condicao = self.expressao()
         self.adicionar_codigo(f"while {condicao}:")
-        self.nivel_indentacao += 1
-        while self.atual() in ('PRINT', 'ID'):
+        self.nivel_indentacao += 1  # Aumenta a indentação para o bloco interno
+        while self.atual() in ('PRINT', 'ID', 'IF', 'WHILE'):
             self.declaracao()
         self.nivel_indentacao -= 1
 
@@ -152,19 +166,22 @@ class CodeGenerator:
 
     def expressao(self):
         resultado = self.termo()
-        while self.atual() in ('LT', 'GT', 'EQ', 'NE'):
+        while self.atual() in ('LT', 'GT', 'EQ', 'NE', 'LE', 'GE'):
             operador = self.lexemas[self.pos]
             self.consumir()
             if operador == 'maior':
                 resultado += f" > {self.termo()}"
             elif operador == 'menor':
                 resultado += f" < {self.termo()}"
-            elif operador == 'igual':
+            elif operador == '==':
                 resultado += f" == {self.termo()}"
-            elif operador == 'diferente':
+            elif operador == '!=':
                 resultado += f" != {self.termo()}"
+            elif operador == '<=':
+                resultado += f" <= {self.termo()}"
+            elif operador == '>=':
+                resultado += f" >= {self.termo()}"
         return resultado
-
 
 
     def fator(self):
@@ -184,7 +201,7 @@ class CodeGenerator:
         elif self.atual() == 'STRING':
             valor = self.lexemas[self.pos]
             self.consumir()
-            return f'"{valor}"'
+            return f'"{valor[1:-1]}"'  
         elif self.atual() == 'LBRACKET':
             return self.lista()
         elif self.atual() == 'PRINT':
@@ -195,8 +212,8 @@ class CodeGenerator:
             self.verificar('RPAREN')
             return f"({resultado})"
         elif self.atual() == 'INPUT':
-            self.consumir()  # Consome o token `INPUT`
-            return self.input_statement() 
+            self.consumir()  # Consome o token INPUT
+            return self.input_statement()
         elif self.atual() == 'INT':  # Adicionamos verificação de INT
             self.consumir()  # Consome 'int'
             self.verificar('LPAREN')  # Verifica que há um parêntese abrindo
@@ -205,11 +222,11 @@ class CodeGenerator:
                 prompt = ""
                 if self.atual() == 'LPAREN':
                     self.verificar('LPAREN')
-                    
+
                     if self.atual() == 'STRING':
                         prompt = self.lexemas[self.pos]
                         self.consumir()
-                    
+
                     self.verificar('RPAREN')
                 self.verificar('RPAREN')  # Verifica que há um parêntese fechando para 'int'
                 return f"int(input({prompt}))"
@@ -247,5 +264,5 @@ class CodeGenerator:
             
             self.verificar('RPAREN')
         
-        # Retorna a expressão `input()` com ou sem o prompt
+        # Retorna a expressão input() com ou sem o prompt
         return f"input({prompt})" if prompt else "input()"

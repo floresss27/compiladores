@@ -18,6 +18,14 @@ class AnalisadorLexico:
                 i += 1
                 continue
 
+            if char == '#':
+                inicio = i
+                while i < len(codigo) and codigo[i] != '\n':
+                    i += 1
+                lexema = codigo[inicio:i]
+                self.tokens.append(('COMMENT', lexema, self.linha_atual, self.coluna_atual))
+                continue
+
             if char.isalpha() or char == '_':
                 inicio = i
                 while i < len(codigo) and (codigo[i].isalnum() or codigo[i] == '_'):
@@ -47,6 +55,12 @@ class AnalisadorLexico:
             elif char in '+-*/<>=!':
                 if char == '=' and i + 1 < len(codigo) and codigo[i + 1] == '=':
                     self.tokens.append(('EQ', '==', self.linha_atual, self.coluna_atual))
+                    i += 2
+                elif char == '<' and i + 1 < len(codigo) and codigo[i + 1] == '=':
+                    self.tokens.append(('LE', '<=', self.linha_atual, self.coluna_atual))
+                    i += 2
+                elif char == '>' and i + 1 < len(codigo) and codigo[i + 1] == '=':
+                    self.tokens.append(('GE', '>=', self.linha_atual, self.coluna_atual))
                     i += 2
                 elif char == '!' and i + 1 < len(codigo) and codigo[i + 1] == '=':
                     self.tokens.append(('NE', '!=', self.linha_atual, self.coluna_atual))
@@ -83,14 +97,18 @@ class AnalisadorLexico:
     def verificar_palavra_reservada(self, lexema):
         palavras_reservadas = {
             'main': 'MAIN', 'class': 'CLASS', 'def': 'DEF', 'int': 'INT',
-            'float': 'FLOAT', 'string': 'STRING', 'se': 'IF', 'senao': 'ELSE','enquanto': 'WHILE', 'repete': 'FOR', 'read': 'READ', 'foto': 'PRINT', 'em': 'IN', 'mais': 'PLUS', 'menos': 'MINUS', 'multiplica': 'MULT', 'divide': 'DIV', 'menor': 'LT', 'maior': 'GT', 'igual': 'ATTR', 'input': 'INPUT', 'int': 'INT'
+            'float': 'FLOAT', 'string': 'STRING', 'se': 'IF', 'senao': 'ELSE',
+            'enquanto': 'WHILE', 'repete': 'FOR', 'read': 'READ', 'foto': 'PRINT',
+            'em': 'IN', 'mais': 'PLUS', 'menos': 'MINUS', 'multiplica': 'MULT',
+            'divide': 'DIV', 'menor': 'LT', 'maior': 'GT', 'igual': 'ATTR', 
+            'input': 'INPUT', 'int': 'INT'
         }
         return palavras_reservadas.get(lexema, 'ID')
 
     def verificar_operador(self, char):
         operadores = {
-            'mais': 'PLUS', 'menos': 'MINUS', 'multiplica': 'MULT', 'divide': 'DIV',
-            'menor': 'LT', 'maior': 'GT', 'igual': 'ATTR',
+            '+': 'PLUS', '-': 'MINUS', '*': 'MULT', '/': 'DIV',
+            '<': 'LT', '>': 'GT', '=': 'ATTR'
         }
         return operadores.get(char, 'UNKNOWN')
 
