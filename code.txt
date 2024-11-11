@@ -1,2 +1,6 @@
-lista igual [ 1, 2, 3, 4, 5 ] #aaaaaa
-foto ( lista )
+x igual 5
+y igual 10
+se x mais y maior 12
+    foto ( "A soma é maior que 12" )
+senao
+    foto ( "A soma é menor ou igual a 12" )

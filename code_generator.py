@@ -57,19 +57,13 @@ class CodeGenerator:
         self.adicionar_codigo(f"if {condicao}:")
         self.nivel_indentacao += 1
 
-        while self.atual() and self.atual() not in ('ELSE', 'senao', 'IF'):
+        # Processa as declarações dentro do if principal
+        while self.atual() and self.atual() not in ('ELSE', 'senao'):
             self.declaracao()
+        
         self.nivel_indentacao -= 1
 
-        if self.atual() == 'IF':
-            self.consumir()
-            condicao = self.expressao()
-            self.adicionar_codigo(f"elif {condicao}:")
-            self.nivel_indentacao += 1
-            while self.atual() and self.atual() not in ('ELSE', 'senao', 'IF'):
-                self.declaracao()
-            self.nivel_indentacao -= 1
-
+        # Tratamento para o `senao` como `else`
         if self.atual() == 'ELSE':
             self.consumir()
             self.adicionar_codigo("else:")
@@ -77,7 +71,7 @@ class CodeGenerator:
             while self.atual() and self.atual() not in ('FOR', 'WHILE', 'ID', 'IF', 'ELSE', 'senao'):
                 self.declaracao()
             self.nivel_indentacao -= 1
-            
+
     def for_statement(self):
         print("Iniciando estrutura for.")
         self.verificar('FOR')
@@ -108,6 +102,8 @@ class CodeGenerator:
         if self.atual() == 'ID':
             self.atribuicao()
         elif self.atual() == 'IF':
+            self.if_statement()
+        elif self.atual() == 'ELSE':
             self.if_statement()
         elif self.atual() == 'FOR':
             self.for_statement()
